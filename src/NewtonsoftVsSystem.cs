@@ -8,8 +8,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace JsonBenchmark;
 
 [SuppressMessage("ReSharper.DPA", "DPA0001: Memory allocation issues")]
-[Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
-[RankColumn, MinColumn, MaxColumn, AllStatisticsColumn, MemoryDiagnoser]
+[Orderer(SummaryOrderPolicy.Default, MethodOrderPolicy.Declared)]
+[MinColumn, MaxColumn, AllStatisticsColumn, MemoryDiagnoser]
 public class NewtonsoftVsSystem
 {
     public NewtonsoftVsSystem()
@@ -30,34 +30,54 @@ public class NewtonsoftVsSystem
         yield return Entities.LargeObjects;
         yield return Entities.ExtraLargeObjects;
     }
+
+    public IEnumerable<string> IntegerPaths()
+    {
+        yield return "SmallIntegers.json";
+        yield return "MediumIntegers.json";
+        yield return "LargeIntegers.json";
+        yield return "ExtraLargeIntegers.json";
+    }
     
+    public IEnumerable<string> ObjectPaths()
+    {
+        yield return "SmallObjects.json";
+        yield return "MediumObjects.json";
+        yield return "LargeObjects.json";
+        yield return "ExtraLargeObjects.json";
+    }
+
     // ------------------- Load -------------------
     
     [Benchmark]
-    public List<int>? LoadIntegersNewtonsoft()
+    [ArgumentsSource(nameof(IntegerPaths))]
+    public List<int>? LoadIntegersNewtonsoft(string path)
     {
-        string content = File.ReadAllText(Utilities.FilePathIntegers);
+        string content = File.ReadAllText(path);
         return JsonConvert.DeserializeObject<List<int>>(content);
     }
  
     [Benchmark]
-    public List<int>? LoadIntegersSystem()
+    [ArgumentsSource(nameof(IntegerPaths))]
+    public List<int>? LoadIntegersSystem(string path)
     {
-        string content = File.ReadAllText(Utilities.FilePathIntegers);
+        string content = File.ReadAllText(path);
         return JsonSerializer.Deserialize<List<int>>(content);
     }
     
     [Benchmark]
-    public List<TestObject>? LoadObjectsNewtonsoft()
+    [ArgumentsSource(nameof(ObjectPaths))]
+    public List<TestObject>? LoadObjectsNewtonsoft(string path)
     {
-        string content = File.ReadAllText(Utilities.FilePathObjects);
+        string content = File.ReadAllText(path);
         return JsonConvert.DeserializeObject<List<TestObject>>(content);
     }
 
     [Benchmark]
-    public List<TestObject>? LoadObjectsSystem()
+    [ArgumentsSource(nameof(ObjectPaths))]
+    public List<TestObject>? LoadObjectsSystem(string path)
     {
-        string content = File.ReadAllText(Utilities.FilePathObjects);
+        string content = File.ReadAllText(path);
         return JsonSerializer.Deserialize<List<TestObject>>(content);
     }
     
